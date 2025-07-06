@@ -1,5 +1,5 @@
 mod dma;
-mod interrupts;
+pub mod interrupts;
 
 use save_state::Savable;
 
