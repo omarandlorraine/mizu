@@ -57,7 +57,7 @@ pub enum CpuState {
 }
 
 bitflags! {
-    #[derive(Savable)]
+    #[derive(Default, Savable)]
     #[savable(bitflags)]
     struct CpuFlags: u8 {
         const Z = 1 << 7;
@@ -67,15 +67,16 @@ bitflags! {
     }
 }
 
-#[derive(Savable, PartialEq)]
+#[derive(Default, Savable, PartialEq)]
 enum HaltMode {
+    #[default]
     NotHalting,
     HaltRunInterrupt,
     HaltNoRunInterrupt,
     HaltBug,
 }
 
-#[derive(Savable)]
+#[derive(Default, Savable)]
 pub struct Cpu {
     reg_a: u8,
     reg_b: u8,
