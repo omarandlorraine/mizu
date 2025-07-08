@@ -1,6 +1,6 @@
 [package]
 name = "mizu"
-version = "1.0.1"
+version = "1.1.0"
 authors = ["Amjad Alsharafi <amjadsharafi10@gmail.com>"]
 edition = "2021"
 description = "An accurate gameboy(DMG) and gameboy color emulator. Front-end for mizu-core"
@@ -11,13 +11,13 @@ keywords = ["gameboy", "emulator"]
 categories = ["emulators"]
 
 [dependencies]
-mizu-core = { version = "1.0.0", path = "mizu-core" }
-sfml = { version = "0.21", default-features = false, features = ["graphics"] }
-ringbuf = "0.3"
+mizu-core = { version = "1.1.0", path = "mizu-core" }
+sfml = { version = "0.24", default-features = false, features = ["graphics"] }
+ringbuf = "0.4"
 clap = { version = "4.0", features = ["string"] }
-native-dialog = "0.7"
+native-dialog = "0.9"
 directories-next = "2.0"
-dynwave = "0.1.0"
+dynwave = "0.2.0"
 
 [workspace]
 members = [

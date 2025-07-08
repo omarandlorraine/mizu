@@ -235,16 +235,16 @@ impl Display for Instruction {
             Opcode::Xor => "XOR".into(),
             Opcode::Or => "OR".into(),
             Opcode::Jp(Condition::Unconditional) => "JP".into(),
-            Opcode::Jp(cond) => format!("JP {:?},", cond),
+            Opcode::Jp(cond) => format!("JP {cond:?},"),
             Opcode::JpHL => "JP".into(),
             Opcode::Jr(Condition::Unconditional) => "JR".into(),
-            Opcode::Jr(cond) => format!("JR {:?},", cond),
+            Opcode::Jr(cond) => format!("JR {cond:?},"),
             Opcode::Call(Condition::Unconditional) => "CALL".into(),
-            Opcode::Call(cond) => format!("CALL {:?},", cond),
+            Opcode::Call(cond) => format!("CALL {cond:?},"),
             Opcode::Ret(Condition::Unconditional) => "RET".into(),
-            Opcode::Ret(cond) => format!("RET {:?},", cond),
+            Opcode::Ret(cond) => format!("RET {cond:?},"),
             Opcode::Reti => "RETI".into(),
-            Opcode::Rst(loc) => format!("RST {:02X}", loc),
+            Opcode::Rst(loc) => format!("RST {loc:02X}"),
             Opcode::Di => "DI".into(),
             Opcode::Ei => "EI".into(),
             Opcode::Ccf => "CCF".into(),
@@ -264,9 +264,9 @@ impl Display for Instruction {
             Opcode::Sra => "SRA".into(),
             Opcode::Swap => "SWAP".into(),
             Opcode::Srl => "SRL".into(),
-            Opcode::Bit(n) => format!("BIT {},", n),
-            Opcode::Res(n) => format!("RES {},", n),
-            Opcode::Set(n) => format!("SET {},", n),
+            Opcode::Bit(n) => format!("BIT {n},"),
+            Opcode::Res(n) => format!("RES {n},"),
+            Opcode::Set(n) => format!("SET {n},"),
             Opcode::Illegal => "ILLEGAL".into(),
             Opcode::Halt => "HALT".into(),
         };
@@ -278,7 +278,7 @@ impl Display for Instruction {
             operands += &format!(",{}", operand_str(self.src));
         }
 
-        write!(f, "{} {}", opcode, operands)
+        write!(f, "{opcode} {operands}")
     }
 }
 

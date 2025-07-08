@@ -345,8 +345,7 @@ impl Printer {
                         inverted_gray_shade as f64 * exposure_multiply;
                     // lastly, just make sure the values do not exceed 255 and
                     // not negative
-                    let exposured_invertd_gray_shade =
-                        exposured_invertd_gray_shade.min(255.).max(0.);
+                    let exposured_invertd_gray_shade = exposured_invertd_gray_shade.clamp(0., 255.);
 
                     // flip to convert to normal gray shade (255 white, 0 black)
                     let gray_shade = 255 - (exposured_invertd_gray_shade as u8);

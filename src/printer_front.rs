@@ -4,8 +4,9 @@ use std::rc::Rc;
 
 use mizu_core::Printer;
 
-use native_dialog::FileDialog;
+use native_dialog::DialogBuilder;
 use sfml::{
+    cpp::FBox,
     graphics::{Color, Image, RenderTarget, RenderWindow, Sprite, Texture},
     window::{Event, Key, Style},
 };
@@ -14,7 +15,7 @@ use crate::{convert_to_rgba, update_window_view, TV_HEIGHT, TV_WIDTH};
 
 pub struct MizuPrinter {
     printer: Rc<RefCell<Printer>>,
-    window: RenderWindow,
+    window: FBox<RenderWindow>,
     window_scroll: u32,
     pixels_buffer: [u8; TV_WIDTH as usize * TV_HEIGHT as usize * 4],
 }
@@ -28,7 +29,8 @@ impl Default for MizuPrinter {
             "mizu printer",
             Style::CLOSE | Style::RESIZE,
             &Default::default(),
-        );
+        )
+        .expect("create printer window");
         let size = window.size();
         update_window_view(&mut window, size.x, size.y);
 
@@ -64,7 +66,7 @@ impl MizuPrinter {
         let printer_image_buffer = printer.get_image_buffer();
 
         let mut texture = Texture::new().expect("texture");
-        assert!(texture.create(TV_WIDTH, TV_HEIGHT),);
+        texture.create(TV_WIDTH, TV_HEIGHT).expect("create texture");
 
         // the number of pixels to skip on scroll, each row is 160 pixels, each
         // pixel is 3 bytes
@@ -81,7 +83,7 @@ impl MizuPrinter {
         unsafe {
             // Safety: we know the `pixels_buffer` is valid for the width and height of the image.
             let image =
-                Image::create_from_pixels(TV_WIDTH, TV_HEIGHT, &self.pixels_buffer).expect("image");
+                Image::from_pixels(TV_WIDTH, TV_HEIGHT, &self.pixels_buffer).expect("image");
             // Safety: we know the size of the image is valid, since its the same size of the texture
             texture.update_from_image(&image, 0, 0);
         }
@@ -124,11 +126,12 @@ impl MizuPrinter {
                         self.window_scroll = 0;
                     }
                     Key::S => {
-                        let file_dialog = FileDialog::new()
+                        let file_dialog = DialogBuilder::file()
                             .set_filename("print.png")
-                            .add_filter("PNG Image", &["png"]);
+                            .add_filter("PNG Image", ["png"])
+                            .save_single_file();
 
-                        if let Ok(Some(filename)) = file_dialog.show_save_single_file() {
+                        if let Ok(Some(filename)) = file_dialog.show() {
                             self.save_buffer_image_to_file(filename);
                         }
                     }
@@ -174,13 +177,16 @@ impl MizuPrinter {
             let image = unsafe {
                 // Safety: we know the `result_image_buffer` is valid for the width and height of the image.
                 //         its just being created above.
-                Image::create_from_pixels(width, height, &result_image_buffer).expect("image")
+                Image::from_pixels(width, height, &result_image_buffer).expect("image")
             };
 
-            let did_save = image.save_to_file(file_path.to_str().expect("PathBuf to_str"));
-
-            if !did_save {
-                println!("[ERROR] was not able to save image due to unknown reason");
+            match image.save_to_file(file_path.to_str().expect("PathBuf to_str")) {
+                Ok(_) => {
+                    println!("[INFO] image saved to {}", file_path.display());
+                }
+                Err(e) => {
+                    println!("[ERROR] was not able to save image: {e}");
+                }
             }
         } else {
             println!("[ERROR] cannot save an empty image");

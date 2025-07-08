@@ -1,4 +1,3 @@
-use crate::SAVE_STATE_VERSION;
 use save_state::Error as saveStateError;
 use std::io::Error as ioError;
 
@@ -15,10 +14,10 @@ pub enum SaveError {
     /// The save state version mismatches the version supported/compatible with
     /// by this version of the emulator.
     ///
-    /// Check [`SAVE_STATE_VERSION`] for the current version.
+    /// Check [`SAVE_STATE_VERSION`][crate::SAVE_STATE_VERSION] for the current version.
     #[error(
-        "The save_state file does not match the emulator version, got ({0}), needed {}",
-        SAVE_STATE_VERSION
+        "The save_state file does not match the emulator version, got ({0}), needed {found}",
+        found = crate::SAVE_STATE_VERSION
     )]
     UnmatchedSaveErrorVersion(usize),
     /// The save state stream/file provided is not for the currently running
