@@ -234,7 +234,7 @@ impl Cartridge {
 
         let hash: [u8; 32] = Sha256::digest(&data).into();
 
-        if data.len() < 0x8000 || data.len() % 0x4000 != 0 {
+        if data.len() < 0x8000 || !data.len().is_multiple_of(0x4000) {
             eprintln!(
                 "[WARN]: the cartridge contain invalid rom size {:X}",
                 data.len()
@@ -245,7 +245,7 @@ impl Cartridge {
         if data.len() < 0x8000 {
             data.extend_from_slice(&vec![0; 0x8000 - data.len()]);
         }
-        if data.len() % 0x4000 != 0 {
+        if !data.len().is_multiple_of(0x4000) {
             data.extend_from_slice(&vec![0; 0x4000 - (data.len() % 0x4000)]);
         }
 
@@ -268,7 +268,7 @@ impl Cartridge {
             TargetDevice::Dmg
         };
 
-        println!("target gameboy {:?}", target_device);
+        println!("target gameboy {target_device:?}");
 
         let mut cartridge_type =
             CartridgeType::from_byte(data[0x147]).ok_or(CartridgeError::InvalidCartridgeType)?;
@@ -286,7 +286,7 @@ impl Cartridge {
         if rom_size != data.len() {
             // try to fix it, sometimes the rom will have `0` as the num_rom_banks
             let mut fixed = false;
-            if rom_size < data.len() && data.len() % rom_size == 0 {
+            if rom_size < data.len() && data.len().is_multiple_of(rom_size) {
                 let div = data.len() / rom_size;
                 if div.is_power_of_two() && div.ilog2() < 8 {
                     println!(
@@ -337,7 +337,7 @@ impl Cartridge {
             });
         }
 
-        println!("LOG: {:?}", cartridge_type);
+        println!("LOG: {cartridge_type:?}");
 
         let mut mapper =
             cartridge_type
@@ -354,7 +354,7 @@ impl Cartridge {
                     ram = saved_ram;
                     mapper.load_battery(&extra);
                 }
-                Err(err) => eprintln!("ERROR: {}", err),
+                Err(err) => eprintln!("ERROR: {err}"),
             }
         }
 
@@ -438,7 +438,7 @@ impl Cartridge {
 impl Cartridge {
     fn get_save_file<P: AsRef<Path>>(path: P) -> PathBuf {
         let extension = path.as_ref().extension().unwrap().to_str().unwrap();
-        path.as_ref().with_extension(format!("{}.sav", extension))
+        path.as_ref().with_extension(format!("{extension}.sav"))
     }
 
     fn load_sram_file<P: AsRef<Path>>(
@@ -469,7 +469,7 @@ impl Cartridge {
     fn save_sram_file(&self) -> Result<(), SramError> {
         //let path = Self::get_save_file(&self.file_path);
         let sram_file_path = &self.sram_file_path;
-        println!("Writing SRAM file data to {:?}", sram_file_path);
+        println!("Writing SRAM file data to {sram_file_path:?}");
 
         let mut file = File::create(sram_file_path)?;
 
@@ -501,7 +501,7 @@ impl Drop for Cartridge {
     fn drop(&mut self) {
         if self.cartridge_type.battery && self.save_on_shutdown {
             if let Err(err) = self.save_sram_file() {
-                eprintln!("Error while saving sram file: {}", err);
+                eprintln!("Error while saving sram file: {err}");
             }
         }
     }

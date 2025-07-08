@@ -61,8 +61,8 @@ impl std::error::Error for FrontSaveError {}
 impl fmt::Display for FrontSaveError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            FrontSaveError::SaveError(e) => write!(f, "Save error: {}", e),
-            FrontSaveError::FileError(e) => write!(f, "File error: {}", e),
+            FrontSaveError::SaveError(e) => write!(f, "Save error: {e}"),
+            FrontSaveError::FileError(e) => write!(f, "File error: {e}"),
             FrontSaveError::NotFound => write!(f, "Save file could not be opened/created"),
         }
     }
@@ -535,7 +535,7 @@ fn main() {
             Arg::new("scale")
                 .long("scale")
                 .short('s')
-                .default_value(format!("{}", DEFAULT_SCALE))
+                .default_value(format!("{DEFAULT_SCALE}"))
                 .action(ArgAction::Set)
                 .value_parser(clap::value_parser!(u32))
                 .help("Specify the amount to scale the initial display from the gameboy size of 160x144"),
@@ -544,7 +544,7 @@ fn main() {
             Arg::new("fps")
                 .long("fps")
                 .short('f')
-                .default_value(format!("{}", DEFAULT_FPS))
+                .default_value(format!("{DEFAULT_FPS}"))
                 .action(ArgAction::Set)
                 .value_parser(clap::value_parser!(u32))
                 .help("Specify the starting emulation speed in FPS, 0 for unlimited"),
