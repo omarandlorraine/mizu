@@ -1,8 +1,8 @@
 mod apu;
 mod cartridge;
-mod cpu;
+pub mod cpu;
 mod joypad;
-mod memory;
+pub mod memory;
 mod ppu;
 mod printer;
 mod save_error;

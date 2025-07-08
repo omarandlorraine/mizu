@@ -57,7 +57,7 @@ pub enum CpuState {
 }
 
 bitflags! {
-    #[derive(Savable)]
+    #[derive(Default, Savable)]
     #[savable(bitflags)]
     struct CpuFlags: u8 {
         const Z = 1 << 7;
@@ -67,28 +67,29 @@ bitflags! {
     }
 }
 
-#[derive(Savable, PartialEq)]
+#[derive(Default, Savable, PartialEq)]
 enum HaltMode {
+    #[default]
     NotHalting,
     HaltRunInterrupt,
     HaltNoRunInterrupt,
     HaltBug,
 }
 
-#[derive(Savable)]
+#[derive(Default, Savable)]
 pub struct Cpu {
-    reg_a: u8,
-    reg_b: u8,
-    reg_c: u8,
-    reg_d: u8,
-    reg_e: u8,
-    reg_h: u8,
-    reg_l: u8,
+    pub reg_a: u8,
+    pub reg_b: u8,
+    pub reg_c: u8,
+    pub reg_d: u8,
+    pub reg_e: u8,
+    pub reg_h: u8,
+    pub reg_l: u8,
     reg_f: CpuFlags,
 
-    reg_sp: u16,
+    pub reg_sp: u16,
 
-    reg_pc: u16,
+    pub reg_pc: u16,
 
     enable_interrupt_next: bool,
     ime: bool,
@@ -412,7 +413,7 @@ impl Cpu {
         bus.read(0);
     }
 
-    fn stack_push<P: CpuBusProvider>(&mut self, data: u16, bus: &mut P) {
+    pub fn stack_push<P: CpuBusProvider>(&mut self, data: u16, bus: &mut P) {
         bus.trigger_write_oam_bug(self.reg_sp);
         self.reg_sp = self.reg_sp.wrapping_sub(1);
         bus.write(self.reg_sp, (data >> 8) as u8);
@@ -420,7 +421,7 @@ impl Cpu {
         bus.write(self.reg_sp, data as u8);
     }
 
-    fn stack_pop<P: CpuBusProvider>(&mut self, bus: &mut P) -> u16 {
+    pub fn stack_pop<P: CpuBusProvider>(&mut self, bus: &mut P) -> u16 {
         let low = bus.read_no_oam_bug(self.reg_sp);
         // instead of triggering normal read oam bug, a glitch happen and
         // read and write (because of increment) oam bug happen at the same
