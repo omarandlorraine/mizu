@@ -16,10 +16,10 @@ use printer_front::MizuPrinter;
 use mizu_core::{GameBoy, GameBoyConfig, JoypadButton, SaveError};
 
 use sfml::{
+    cpp::FBox,
     graphics::{Color, FloatRect, Image, RenderTarget, RenderWindow, Sprite, Texture, View},
     system::Vector2f,
     window::{Event, Key, Style},
-    SfBox,
 };
 
 use clap::{Arg, ArgAction, Command};
@@ -82,7 +82,7 @@ impl From<std::io::Error> for FrontSaveError {
 
 struct GameboyFront {
     gameboy: GameBoy,
-    window: RenderWindow,
+    window: FBox<RenderWindow>,
     fps: u32,
     audio_player: Option<AudioPlayer<f32>>,
     pixels_buffer: [u8; TV_HEIGHT as usize * TV_WIDTH as usize * 4],
@@ -103,7 +103,8 @@ impl GameboyFront {
             "",
             Style::CLOSE | Style::RESIZE,
             &Default::default(),
-        );
+        )
+        .expect("create window");
         let mut notifications = Notifications::new();
 
         let size = window.size();
@@ -149,7 +150,7 @@ impl GameboyFront {
 
     fn run_loop(&mut self) {
         let mut texture = Texture::new().expect("texture");
-        assert!(texture.create(TV_WIDTH, TV_HEIGHT));
+        texture.create(TV_WIDTH, TV_HEIGHT).expect("create texture");
         let mut t = std::time::Instant::now();
 
         loop {
@@ -200,8 +201,8 @@ impl GameboyFront {
 
             unsafe {
                 // Safety: we know the `pixels_buffer` is valid for the width and height of the image.
-                let image = Image::create_from_pixels(TV_WIDTH, TV_HEIGHT, &self.pixels_buffer)
-                    .expect("image");
+                let image =
+                    Image::from_pixels(TV_WIDTH, TV_HEIGHT, &self.pixels_buffer).expect("image");
 
                 // Safety: we know the size of the image is valid, since its the same size of the texture
                 texture.update_from_image(&image, 0, 0);
@@ -455,7 +456,7 @@ fn get_new_view(
     window_height: u32,
     target_width: u32,
     target_height: u32,
-) -> SfBox<View> {
+) -> FBox<View> {
     let mut viewport = FloatRect::new(0., 0., 1., 1.);
 
     let screen_width = window_width as f32 / target_width as f32;
@@ -469,10 +470,13 @@ fn get_new_view(
         viewport.top = (1. - viewport.height) / 2.;
     }
 
-    let mut view = View::new(
-        Vector2f::new((target_width / 2) as f32, (target_height / 2) as f32),
-        Vector2f::new((target_width) as f32, (target_height) as f32),
-    );
+    let mut view = View::new().expect("create view");
+
+    view.set_size(Vector2f::new(target_width as f32, target_height as f32));
+    view.set_center(Vector2f::new(
+        (target_width / 2) as f32,
+        (target_height / 2) as f32,
+    ));
 
     view.set_viewport(viewport);
 
@@ -483,7 +487,7 @@ fn get_new_view(
 /// this view is in the size of the GB LCD screen
 /// but we can scale the window and all the pixels will be scaled
 /// accordingly
-pub fn update_window_view(window: &mut dyn RenderTarget, window_width: u32, window_height: u32) {
+pub fn update_window_view(window: &mut FBox<RenderWindow>, window_width: u32, window_height: u32) {
     window.set_view(&get_new_view(
         window_width,
         window_height,

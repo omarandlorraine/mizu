@@ -1,8 +1,8 @@
 use super::{get_new_view, TV_HEIGHT, TV_WIDTH};
 
 use sfml::{
+    cpp::FBox,
     graphics::{Drawable, Font, Rect, RenderTarget, Text, Transformable},
-    SfBox,
 };
 
 const NOTIF_FONT_SIZE: u32 = 25;
@@ -15,7 +15,7 @@ const FONT_TTF_FILE: &[u8] = include_bytes!("./resources/Inconsolata/Inconsolata
 
 pub struct Notifications {
     messages: Vec<(String, f32)>,
-    font: SfBox<Font>,
+    font: FBox<Font>,
     width: u32,
     height: u32,
 }
