@@ -41,7 +41,7 @@ jobs:
       with:
         fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
     - name: Security audit
-      uses: rustsec/audit-check@v1
+      uses: rustsec/audit-check@v2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Set up SFML
