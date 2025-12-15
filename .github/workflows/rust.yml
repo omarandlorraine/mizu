@@ -10,6 +10,10 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
 
@@ -19,23 +23,25 @@ jobs:
     - name: Download apt packages
       run: |
         sudo apt-get update -y 
-        sudo apt-get install -y libpthread-stubs0-dev libgl1-mesa-dev libx11-dev libx11-xcb-dev libxcb-image0-dev libxrandr-dev libxcb-randr0-dev libudev-dev libfreetype6-dev libglew-dev libjpeg8-dev libgpgme11-dev libsndfile1-dev libopenal-dev libjpeg62 libxcursor-dev cmake libclang-dev clang libasound2-dev bison
+        sudo apt-get install -y libpthread-stubs0-dev libgl1-mesa-dev libx11-dev libx11-xcb-dev libxcb-image0-dev libxrandr-dev libxcb-randr0-dev libudev-dev libfreetype6-dev libglew-dev libjpeg8-dev libgpgme11-dev libsndfile1-dev libopenal-dev libjpeg62 libxcursor-dev cmake libclang-dev clang libasound2-dev bison libxi-dev
     - name: Install Rust
       uses: actions-rs/toolchain@v1
       with:
           toolchain: stable
           override: true
           target: x86_64-unknown-linux-gnu
+
+    - uses: Swatinem/rust-cache@v2
+
     - name: Install cargo-tarpaulin
-      uses: actions-rs/install@v0.1
+      uses: taiki-e/install-action@v2
       with:
-        crate: cargo-tarpaulin
-        version: latest
-        use-tool-cache: true
-    - uses: actions/checkout@v2
+        tool: cargo-tarpaulin
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-    - uses: actions-rs/audit-check@v1
+    - name: Security audit
+      uses: rustsec/audit-check@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Set up SFML
@@ -58,4 +64,4 @@ jobs:
         export SFML_INCLUDE_DIR=$GITHUB_WORKSPACE/sfml_install/usr/local/include
         export SFML_LIBS_DIR=$GITHUB_WORKSPACE/sfml_install/usr/local/lib
         sh ./.github/install_and_run_tests.sh
-    - uses: codecov/codecov-action@v1.0.11
+    - uses: codecov/codecov-action@v5
