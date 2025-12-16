@@ -46,6 +46,11 @@ pub struct CpuRegisters {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub enum RunError {
+    IllegalInstruction
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum CpuState {
     Normal,
     InfiniteLoop,
@@ -151,7 +156,7 @@ impl Cpu {
         cpu
     }
 
-    pub fn next_instruction<P: CpuBusProvider>(&mut self, bus: &mut P) -> Result<CpuState, &'static str> {
+    pub fn next_instruction<P: CpuBusProvider>(&mut self, bus: &mut P) -> Result<CpuState, RunError> {
         if bus.stopped() {
             self.advance_bus(bus);
             return Ok(CpuState::Stopped);
@@ -450,7 +455,7 @@ impl Cpu {
         &mut self,
         instruction: Instruction,
         bus: &mut P,
-    ) -> Result<CpuState, &'static str> {
+    ) -> Result<CpuState, RunError> {
         let src = self.read_operand(instruction.src, bus);
 
         let mut cpu_state = CpuState::Normal;
@@ -924,8 +929,8 @@ impl Cpu {
                 bus.enter_stop_mode();
                 Ok(0)
             }
-            Opcode::Illegal => Err("undecodable opcode"),
-            Opcode::Prefix => Err("unreachable"),
+            Opcode::Illegal => Err(RunError::IllegalInstruction),
+            Opcode::Prefix => unreachable!(),
         }?;
 
         // DEBUG
