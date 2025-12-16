@@ -233,7 +233,14 @@ impl Cpu {
             instruction = Instruction::from_prefix(self.fetch_next_pc(bus), pc);
         }
 
-        self.exec_instruction(instruction, bus)
+        match self.exec_instruction(instruction, bus) {
+            Err(e) => {
+                // do not add pc from the last fetch ^
+                self.reg_pc = pc;
+                Err(e)
+            }
+            Ok(r) => Ok(r)
+        }
     }
 }
 
